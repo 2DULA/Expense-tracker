@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+const API_URL = "https://expense-tracker-3g0m.onrender.com"
+
 function App() {
   const [expenses, setExpenses] = useState([])
   const [name, setName] = useState('')
@@ -11,7 +13,7 @@ function App() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('http://localhost:5000/expenses')
+    fetch(`${API_URL}/expenses`)
       .then(res => res.json())
       .then(data => setExpenses(data))
   }, [])
@@ -22,7 +24,7 @@ function App() {
       return
     }
     setError('')
-    const response = await fetch('http://localhost:5000/expenses', {
+    const response = await fetch(`${API_URL}/expenses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, amount, category, date })
@@ -34,7 +36,7 @@ function App() {
 
   const deleteExpense = async (id, expenseName) => {
     if (!window.confirm(`Are you sure you want to delete "${expenseName}"?`)) return
-    await fetch(`http://localhost:5000/expenses/${id}`, { method: 'DELETE' })
+    await await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE' })
     setExpenses(expenses.filter(e => e.id !== id))
   }
 
@@ -49,7 +51,7 @@ function App() {
   }
 
   const saveEdit = async (id) => {
-    const response = await fetch(`http://localhost:5000/expenses/${id}`, {
+    const response = await fetch(`${API_URL}/expenses/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editData)
