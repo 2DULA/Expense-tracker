@@ -5,7 +5,9 @@ const pool = require('./db')
 
 const app = express()
 app.use(cors({
-    origin: 'https://expense-tracker-beta-five-92.vercel.app/'
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
 }))
 app.use(express.json())
 
