@@ -12,4 +12,4 @@ A full stack expense tracking app built with React, Node.js, Express, and Postgr
 - **Frontend:** React
 - **Backend:** Node.js + Express
 - **Database:** PostgreSQL (Supabase)
-- **Deployment:** Vercel (frontend), Railway (backend)
+- **Deployment:** Vercel (frontend), Render (backend)
