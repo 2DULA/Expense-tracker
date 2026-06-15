@@ -27,6 +27,7 @@ function App() {
   }, [token])
 
   const handleAuth = async () => {
+    setError('')
     const endpoint = isLogin ? '/auth/login' : '/auth/signup'
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',

@@ -16,6 +16,9 @@ router.post('/signup', async (req, res) => {
         const token = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET)
         res.json({ token })
     } catch (err) {
+        if (err.code === '23505') {
+            return res.status(400).json({ error: 'Account already exists, please log in instead.' })
+        }
         res.status(500).json({ error: err.message })
     }
 })
