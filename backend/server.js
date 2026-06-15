@@ -9,9 +9,11 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }))
-app.use(express.json())
-
-const PORT = process.env.PORT || 5000
+app.use(cors({
+    origin: 'https://expense-tracker-dula.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+}))
 
 // Get all expenses
 app.get('/expenses', async (req, res) => {
