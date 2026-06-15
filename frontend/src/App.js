@@ -136,7 +136,7 @@ function App() {
         </button>
         <p style={{ marginTop: '1rem', fontSize: '0.85rem', textAlign: 'center' }}>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span style={{ color: '#0070f3', cursor: 'pointer' }} onClick={() => setIsLogin(!isLogin)}>
+          <span style={{ color: '#0070f3', cursor: 'pointer' }} onClick={() => { setIsLogin(!isLogin); setError('') }}>
             {isLogin ? 'Sign Up' : 'Log In'}
           </span>
         </p>
