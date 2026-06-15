@@ -5,7 +5,7 @@ const pool = require('./db')
 
 const app = express()
 app.use(cors({
-    origin: 'https://expense-tracker-dula.vercel.app',
+    origin: /\.vercel\.app$/,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }))
