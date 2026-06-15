@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
 
-const API_URL = "https://expense-tracker-3g0m.onrender.com"
+const API_URL = 'https://expense-tracker-3g0m.onrender.com'
 
 function App() {
+  const [token, setToken] = useState(localStorage.getItem('token'))
+  const [isLogin, setIsLogin] = useState(true)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [expenses, setExpenses] = useState([])
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
@@ -13,10 +17,36 @@ function App() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch(`${API_URL}/expenses`)
-      .then(res => res.json())
-      .then(data => setExpenses(data))
-  }, [])
+    if (token) {
+      fetch(`${API_URL}/expenses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setExpenses(Array.isArray(data) ? data : []))
+    }
+  }, [token])
+
+  const handleAuth = async () => {
+    const endpoint = isLogin ? '/auth/login' : '/auth/signup'
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+    const data = await response.json()
+    if (data.token) {
+      localStorage.setItem('token', data.token)
+      setToken(data.token)
+    } else {
+      setError(data.error)
+    }
+  }
+
+  const logout = () => {
+    localStorage.removeItem('token')
+    setToken(null)
+    setExpenses([])
+  }
 
   const addExpense = async () => {
     if (!name || !amount || !category || !date) {
@@ -26,7 +56,10 @@ function App() {
     setError('')
     const response = await fetch(`${API_URL}/expenses`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify({ name, amount, category, date })
     })
     const newExpense = await response.json()
@@ -36,7 +69,10 @@ function App() {
 
   const deleteExpense = async (id, expenseName) => {
     if (!window.confirm(`Are you sure you want to delete "${expenseName}"?`)) return
-    await await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE' })
+    await fetch(`${API_URL}/expenses/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    })
     setExpenses(expenses.filter(e => e.id !== id))
   }
 
@@ -53,7 +89,10 @@ function App() {
   const saveEdit = async (id) => {
     const response = await fetch(`${API_URL}/expenses/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify(editData)
     })
     const updated = await response.json()
@@ -65,7 +104,7 @@ function App() {
 
   const styles = {
     container: { maxWidth: '650px', margin: '0 auto', padding: '2rem', fontFamily: 'sans-serif' },
-    header: { marginBottom: '0.5rem' },
+    header: { marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     total: { fontSize: '1.2rem', color: '#555', marginBottom: '1.5rem' },
     form: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' },
     input: { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9rem' },
@@ -76,20 +115,47 @@ function App() {
     saveBtn: { background: '#22c55e', color: 'white', marginLeft: '0.5rem' },
     cancelBtn: { background: '#f0f0f0', marginLeft: '0.5rem' },
     deleteBtn: { background: '#ef4444', color: 'white', marginLeft: '0.5rem' },
+    logoutBtn: { background: '#ef4444', color: 'white' },
     card: { border: '1px solid #ddd', padding: '0.75rem 1rem', marginBottom: '0.5rem', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    emptyState: { color: '#999', textAlign: 'center', marginTop: '2rem' }
+    emptyState: { color: '#999', textAlign: 'center', marginTop: '2rem' },
+    authContainer: { maxWidth: '400px', margin: '5rem auto', padding: '2rem', border: '1px solid #ddd', borderRadius: '8px' },
+    authInput: { width: '100%', padding: '0.5rem', marginBottom: '1rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9rem', boxSizing: 'border-box' },
+  }
+
+  if (!token) {
+    return (
+      <div style={styles.authContainer}>
+        <h2>{isLogin ? 'Log In' : 'Sign Up'}</h2>
+        <br />
+        <input style={styles.authInput} placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+        <input style={styles.authInput} placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        {error && <p style={styles.error}>{error}</p>}
+        <button style={{ ...styles.btn, ...styles.addBtn, width: '100%' }} onClick={handleAuth}>
+          {isLogin ? 'Log In' : 'Sign Up'}
+        </button>
+        <p style={{ marginTop: '1rem', fontSize: '0.85rem', textAlign: 'center' }}>
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <span style={{ color: '#0070f3', cursor: 'pointer' }} onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? 'Sign Up' : 'Log In'}
+          </span>
+        </p>
+      </div>
+    )
   }
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.header}>Expense Tracker</h1>
+      <div style={styles.header}>
+        <h1>Expense Tracker</h1>
+        <button style={{ ...styles.btn, ...styles.logoutBtn }} onClick={logout}>Logout</button>
+      </div>
       <p style={styles.total}>Total: <strong>${total.toFixed(2)}</strong></p>
 
       <div style={styles.form}>
         <input style={styles.input} placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
         <input style={styles.input} placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} />
         <input style={styles.input} placeholder="Category" value={category} onChange={e => setCategory(e.target.value)} />
-        <input style={{ ...styles.input }} type="date" value={date} onChange={e => setDate(e.target.value)} />
+        <input style={styles.input} type="date" value={date} onChange={e => setDate(e.target.value)} />
         <button style={{ ...styles.btn, ...styles.addBtn }} onClick={addExpense}>Add</button>
       </div>
       {error && <p style={styles.error}>{error}</p>}
