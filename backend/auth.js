@@ -8,6 +8,9 @@ const router = express.Router()
 router.post('/signup', async (req, res) => {
     try {
         const { email, password } = req.body
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' })
+        }
         const hashed = await bcrypt.hash(password, 10)
         const result = await pool.query(
             'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email',

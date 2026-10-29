@@ -10,7 +10,19 @@ const setup = async () => {
   `)
 
   await pool.query(`
-    ALTER TABLE expenses 
+    CREATE TABLE IF NOT EXISTS expenses (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      amount NUMERIC NOT NULL,
+      category VARCHAR(255),
+      date DATE DEFAULT CURRENT_DATE,
+      user_id INTEGER REFERENCES users(id)
+    )
+  `)
+
+  // Older databases created the expenses table before user accounts existed
+  await pool.query(`
+    ALTER TABLE expenses
     ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id)
   `)
 
@@ -18,4 +30,7 @@ const setup = async () => {
   process.exit()
 }
 
-setup()
+setup().catch((err) => {
+  console.error('Setup failed:', err.message)
+  process.exit(1)
+})
